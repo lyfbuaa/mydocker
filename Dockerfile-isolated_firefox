@@ -1,0 +1,69 @@
+# To get the Fedora-Docker-Base-22-20150521.x86_64 base, see:
+#
+#     https://getfedora.org/en/cloud/download/docker.html
+# 
+# To build this image:
+#
+#     docker build -t isolated_firefox .
+#
+# To run this image:
+#
+#     docker run -v /sys/fs/cgroup:/sys/fs/cgroup:ro isolated_firefox
+#
+
+from f23:1.0
+# update
+ADD ./*.repo /etc/yum.repos.d/ 
+RUN dnf -y update && dnf -y clean all
+
+#setup systemd
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); rm -f /lib/systemd/system/multi-user.target.wants/*;rm -f /etc/systemd/system/*.wants/*;rm -f /lib/systemd/system/local-fs.target.wants/*; rm -f /lib/systemd/system/sockets.target.wants/*udev*; rm -f /lib/systemd/system/sockets.target.wants/*initctl*; rm -f /lib/systemd/system/basic.target.wants/*;rm -f /lib/systemd/system/anaconda.target.wants/*;
+RUN mkdir -p /run/udev; mkdir -p /run/dbus; mkdir -p /run/systemd/system
+RUN echo -e 'ExecStartPost=/usr/bin/chmod a+w /run/dbus/system_bus_socket' >> /usr/lib/systemd/system/dbus.socket
+RUN cat /usr/lib/systemd/system/systemd-journald-audit.socket | sed 's/ListenNetlink=audit 1/ListenFIFO=\/var\/run\/ignore/' > /usr/lib/systemd/system/systemd-journald-audit.tmp 
+RUN mv /usr/lib/systemd/system/systemd-journald-audit.tmp /usr/lib/systemd/system/systemd-journald-audit.socket
+
+#install firefox, vnc, gstreamer, pulseaudio, etc.
+RUN dnf -y install alsa-plugins-pulseaudio dejavu-sans-fonts dejavu-serif-fonts firefox fluxbox gstreamer1-plugins-base gstreamer1-plugins-good icecast pulseaudio x11vnc xorg-x11-server-Xvfb xterm && dnf -y clean all
+
+#install flash
+RUN dnf -y install http://linuxdownload.adobe.com/adobe-release/adobe-release-x86_64-1.0-1.noarch.rpm && dnf -y clean all
+RUN dnf -y install flash-plugin && dnf -y clean all
+
+#let pulseaudio run in a container without a soundcard
+RUN cat /usr/lib/systemd/system/rtkit-daemon.service | sed 's/ExecStart=\/usr\/libexec\/rtkit-daemon/ExecStart=\/usr\/libexec\/rtkit-daemon --no-drop-privileges/' | sed 's/PrivateNetwork=yes/#PrivateNetwork=yes/' > /usr/lib/systemd/system/rtkit-daemon.tmp
+RUN mv /usr/lib/systemd/system/rtkit-daemon.tmp /usr/lib/systemd/system/rtkit-daemon.service
+
+#add the browser user
+RUN adduser browser
+RUN usermod -a -G audio browser
+RUN usermod -a -G video browser
+
+#allow icecast to be run as the browser user
+RUN cat /etc/icecast.xml | sed 's/ *<bind-address>127.0.0.1<\/bind-address>/<bind-address>0.0.0.0<\/bind-address>/g' | sed 's/ *<logdir>\/var\/log\/icecast<\/logdir>/<logdir>\/home\/browser<\/logdir>/g' > /home/browser/icecast.xml
+RUN chown browser:browser /home/browser/icecast.xml
+
+#start icecast, the pulseaudio monitor, and firefox as the browser user
+RUN echo -e \
+'#!/bin/bash\n\
+export DISPLAY=":1"\n\
+Xvfb :1 -screen 0 1024x768x16 &\n\
+startfluxbox &\n\
+x11vnc -display :1 -bg -nopw -listen 0.0.0.0 -xkb -forever\n\
+unset XDG_RUNTIME_DIR\n\
+unset XDG_SESSION_ID\nunset XDG_SEAT\n\
+pulseaudio -D\n\
+icecast -c /home/browser/icecast.xml &\n\
+gst-launch-1.0 pulsesrc ! "audio/x-raw, format=(string)S16LE, endianness=(int)1234,signed=(boolean)true, width=(int)16, depth=(int)16, rate=(int)44100,channels=(int)2" ! audiorate ! audioconvert ! vorbisenc ! oggmux ! shout2send ip=0.0.0.0 port=8000 password=hackme mount=/firefox.ogg &\n\
+firefox '"'"'http://bit.ly/1gB3px0'"'"'\n\
+' > /home/browser/firefox.sh
+RUN chmod u+x /home/browser/firefox.sh
+
+#start systemd and then the above
+RUN echo -e '#!/bin/bash\n/usr/lib/systemd/systemd --system &\n\
+exec su browser - /home/browser/firefox.sh\
+' > /root/firefox.sh
+RUN chmod u+x /root/firefox.sh
+CMD    ["/root/firefox.sh"]
+
+LABEL RUN docker run -v /sys/fs/cgroup:/sys/fs/cgroup:ro isolated_firefox
