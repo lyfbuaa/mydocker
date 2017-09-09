@@ -1,17 +1,22 @@
-#v1.12
-#docker build --rm=true -t xxnet-f23:1.0 . -f Dckerfile-xxnet
-#docker run --name myxxnet -d --cpuset-cpus=0,1 --cpu-shares=2 -m 128m --cap-drop ALL -u developer f23-xxnet:1.2
-#docker load -i ./xxnet-f23.tar 
+#v1.3
+#docker build --rm=true -t xxnet:1.0 . -f Dckerfile-xxnet
+#docker network create -d bridge --subnet 172.21.0.0/16 mynetwork
+#docker run --name myxxnet -d --network=mynetwork --ip=172.21.0.2 --cpuset-cpus=0,1 --cpu-shares=2 -m 128m --cap-drop ALL -u developer xxnet:1.0
+#docker load -i ./xxnet-f23.tar  
 
 FROM fedora:1.0
+ARG Myappid=
 #ADD ./*repo /etc/yum.repos.d/
-ADD ./XX-Net-master /home/developer/XX-Net
-RUN dnf -y install pyOpenSSL && dnf clean all 
+ADD ./XX-Net* /home/developer/xx-net
+RUN dnf -y install pyOpenSSL python2&& dnf clean all 
 # Replace 1000 with your user / group id
 RUN export uid=1000 gid=1000 && \
-    mkdir -p /home/developer/XX-Net && \
     echo "developer:x:${uid}:${gid}:developer:/home/developer:/bin/bash" >> /etc/passwd && \
     echo "developer:x:${uid}:" >> /etc/group && \
+    sed 's/127.0.0.1/0.0.0.0/g' /home/developer/xx-net/code/default/gae_proxy/local/proxy.ini>/home/developer/xx-net/code/default/gae_proxy/manual.ini && \
+    sed -e "s/^appid.*/appid=$Myappid/g" -i /home/developer/xx-net/code/default/gae_proxy/manual.ini && \
+    echo "modules:" >/home/developer/xx-net/code/default/launcher/config.yaml && \
+    echo "    launcher: {allow_remote_connect: 1, control_port: 8085, popup_webui: 0, proxy: pac,show_systray: 0}" >>/home/developer/xx-net/code/default/launcher/config.yaml && \    
     chown ${uid}:${gid} -R /home/developer
 
 EXPOSE 8084 8085 8086 8087 8888
@@ -19,5 +24,5 @@ EXPOSE 8084 8085 8086 8087 8888
 USER developer
 ENV HOME /home/developer
 
-CMD /home/developer/XX-Net/start
+CMD /home/developer/xx-net/start
 
