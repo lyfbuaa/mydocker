@@ -22,7 +22,7 @@ RUN export uid=1000 gid=1000 && \
     echo "    launcher: {allow_remote_connect: 1, control_port: 8085, popup_webui: 0, proxy: pac,show_systray: 0}" >>/home/developer/xx-net/data/launcher/config.yaml && \
     echo "{"socks_port": 1080, "socks_host": "0.0.0.0"}" >>/home/developer/xx-net/data/x_tunnel/client.json && \    
     chown ${uid}:${gid} -R /home/developer
-
+ 
 EXPOSE 8084 8085 8086 8087 8888 1080
 
 USER developer
