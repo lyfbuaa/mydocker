@@ -10,7 +10,7 @@ ARG Myappid=
 #ADD ./XX-Net-master /home/developer/XX-Net
 RUN dnf -y install dnf-plugins-core && \
     dnf -y config-manager --add-repo=http://repo.fdzh.org/FZUG/FZUG.repo && \
-    dnf -y install xx-net && dnf clean all && \
+    dnf -y install xx-net miredo iproute&& dnf clean all && \
     export uid=1000 gid=1000 && \
     mkdir -p /home/developer/.xx-net/gae_proxy/ && \
     mkdir -p /home/developer/.xx-net/launcher/ && \

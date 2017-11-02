@@ -8,7 +8,7 @@ FROM fedora:1.0
 ARG Myappid=
 #ADD ./*repo /etc/yum.repos.d/
 ADD ./XX-Net* /home/developer/xx-net
-RUN dnf -y install pyOpenSSL python2&& dnf clean all 
+RUN dnf -y install pyOpenSSL python2 miredo iproute&& dnf clean all 
 # Replace 1000 with your user / group id
 RUN export uid=1000 gid=1000 && \
     mkdir -p /home/developer/xx-net/data/gae_proxy/ && \
@@ -28,5 +28,5 @@ EXPOSE 8084 8085 8086 8087 8888 1080
 USER developer
 ENV HOME /home/developer
 
-CMD /home/developer/xx-net/start
+CMD miredo && /home/developer/xx-net/start
 
