@@ -29,5 +29,5 @@ EXPOSE 8084 8085 8086 8087 8888
 USER developer
 ENV HOME /home/developer
 
-CMD xx-net
+CMD sh -c 'miredo && xx-net'
 

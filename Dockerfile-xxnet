@@ -28,5 +28,5 @@ EXPOSE 8084 8085 8086 8087 8888 1080
 USER developer
 ENV HOME /home/developer
 
-CMD miredo && /home/developer/xx-net/start
+CMD sh -c 'miredo && /home/developer/xx-net/start'
 
