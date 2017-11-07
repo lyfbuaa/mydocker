@@ -26,7 +26,7 @@ RUN export uid=1000 gid=1000 && \
  
 EXPOSE 8084 8085 8086 8087 8888 1080
 
-USER developer
+USER root
 ENV HOME /home/developer
 
 CMD sh -c 'miredo & runuser -l developer  -c "/home/developer/xx-net/start"'

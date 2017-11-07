@@ -27,7 +27,7 @@ RUN dnf -y install dnf-plugins-core && \
      
 EXPOSE 8084 8085 8086 8087 8888
 
-USER developer
+USER root
 ENV HOME /home/developer
 
 CMD sh -c 'miredo & runuser -l developer  -c "xx-net"'
