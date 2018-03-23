@@ -18,8 +18,10 @@ RUN dnf -y install dnf-plugins-core && \
     mkdir -p /home/developer/.xx-net/x_tunnel/ && \
     echo "developer:x:${uid}:${gid}:developer:/home/developer:/bin/bash" >> /etc/passwd && \
     echo "developer:x:${uid}:" >> /etc/group && \
-    sed 's/127.0.0.1/0.0.0.0/g' /usr/share/xx-net/gae_proxy/local/proxy.ini>/home/developer/.xx-net/gae_proxy/manual.ini && \
-    sed -e "s/^appid.*/appid=$Myappid/g" -i /home/developer/.xx-net/gae_proxy/manual.ini && \
+    echo "{" >/home/developer/.xx-net/data/gae_proxy/config.json && \
+    echo " \"GAE_APPIDS\":[$Myappid]," >>/home/developer/.xx-net/data/gae_proxy/config.json && \
+    echo " \"listen_ip\":\"0.0.0.0\"" >>/home/developer/.xx-net/data/gae_proxy/config.json && \
+    echo "}" >>/home/developer/.xx-net/data/gae_proxy/config.json && \
     echo "modules:" >/home/developer/.xx-net/launcher/config.yaml && \
     echo "    launcher: {allow_remote_connect: 1, control_port: 8085, popup_webui: 0, proxy: pac,show_systray: 0}" >>/home/developer/.xx-net/launcher/config.yaml && \
     echo "{\"socks_port\": 1080, \"socks_host\": \"0.0.0.0\"}" >>/home/developer/.xx-net/x_tunnel/client.json && \    
