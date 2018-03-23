@@ -2,7 +2,6 @@
 #docker build --rm=true -t xxnet:1.0 . -f Dckerfile-xxnet
 #docker network create -d bridge --subnet 172.21.0.0/16 xxnetwork
 #docker run --name myxxnet -d --network=xxnetwork --ip=172.21.0.2 --cpuset-cpus=0,1 --cpu-shares=2 -m 128m --cap-drop ALL -u developer xxnet:1.0
-#for ipv6: 
 #docker run --name myxxnet -d --network=xxnetwork --ip=172.21.0.2  --cpuset-cpus=0,1 --cpu-shares=2 -m 128m --device=/dev/net/tun:/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=0 --security-opt label=disable  --cap-drop all --cap-add chown --cap-add kill --cap-add  setuid --cap-add  setgid --cap-add net_admin --cap-add net_raw  -u root xxnet:1.0  
 #docker load -i ./xxnet-f23.tar  
 
