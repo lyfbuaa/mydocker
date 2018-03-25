@@ -1,1 +1,3 @@
-41tZVeDJZnB1DwT7XANSEhJxCYf7QeSps9ttaQPmFdopK7trtUkAT4Eh14yV6rEL2CVK2GnSGDHUR7NrgVXAE2mDJ1uwTcY
+./bitcoind -datadir=/mnt/WORK2/bc/data/ -conf=/mnt/WORK2/bc/bitcoin-0.16.0/bitcoin.conf
+./monerod --config-file=/mnt/WORK2/bc/monero-gui-v0.11.1.0/monerod.conf
+bfgminer -S opencl:auto -S cpu:auto --userpass mybitcoin:12mEu9Wb4fCGZeBkzmMzCJywFfWhEYpXw5 --generate-to 12mEu9Wb4fCGZeBkzmMzCJywFfWhEYpXw5 --url 127.0.0.1:8332 --cpu-threads 1
