@@ -1,0 +1,24 @@
+#v1.0
+#docker build --rm=true -t ubuntu_ideamaker:1.0 . -f Dockerfile-ubuntu-xfce-ideamaker
+#docker run -d --name ubuntu_ideamaker -p 5901:5901 -p 6901:6901 --runtime nvidia -v /mnt/panA/upload/:/mnt:Z --cap-drop ALL ubuntu_ideamaker:1.0
+#connect via VNC viewer localhost:5901, default password: vncpassword
+#connect via noVNC HTML5 full client: http://localhost:6901/vnc.html, default password: vncpassword
+#connect via noVNC HTML5 lite client: http://localhost:6901/?password=vncpassword
+ 
+
+## Custom Dockerfile
+#https://hub.docker.com/r/consol/ubuntu-xfce-vnc
+FROM consol/ubuntu-xfce-vnc:1.4.0
+ENV REFRESHED_AT 2019-03-09
+ARG Myapp=ideaMaker_3.3.0.2343-ubuntu_amd64.deb
+# Switch to root user to install additional software
+USER 0
+
+## Install a ideamaker
+ADD ./$Myapp /media
+RUN apt-get install -y /media/$Myapp \
+    && apt-get clean all \
+    && rm -f /media/$Myapp
+
+## switch back to default user
+USER 1000
