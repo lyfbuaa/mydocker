@@ -5,11 +5,11 @@
 #docker run --name myxxnet -d --network=xxnetwork --ip=172.21.0.2  --cpuset-cpus=0,1 --cpu-shares=2 -m 128m --device=/dev/net/tun:/dev/net/tun --sysctl net.ipv6.conf.all.disable_ipv6=0 --security-opt label=disable  --cap-drop all --cap-add chown --cap-add kill --cap-add  setuid --cap-add  setgid --cap-add net_admin --cap-add net_raw  -u root xxnet:1.0  
 #docker load -i ./xxnet-f23.tar  
  
-FROM fedora:32
+FROM fedora:29
 ARG Myappid=
 #ADD ./*repo /etc/yum.repos.d/
 ADD ./XX-Net* /home/developer/xx-net
-RUN dnf -y install pyOpenSSL python2 miredo iproute&& dnf clean all 
+RUN dnf -y install python3-pyOpenSSL python3 miredo iproute sudo&& dnf clean all 
 # Replace 1000 with your user / group id
 RUN export uid=1000 gid=1000 && \
     mkdir -p /home/developer/xx-net/data/gae_proxy/ && \
@@ -21,8 +21,9 @@ RUN export uid=1000 gid=1000 && \
     echo " \"GAE_APPIDS\":[$Myappid]," >>/home/developer/xx-net/data/gae_proxy/config.json && \
     echo " \"listen_ip\":\"0.0.0.0\"" >>/home/developer/xx-net/data/gae_proxy/config.json && \
     echo "}" >>/home/developer/xx-net/data/gae_proxy/config.json && \
-    echo "modules:" >/home/developer/xx-net/data/launcher/config.yaml && \
-    echo "    launcher: {allow_remote_connect: 1, control_port: 8085, popup_webui: 0, proxy: pac,show_systray: 0}" >>/home/developer/xx-net/data/launcher/config.yaml && \
+    echo "{" >/home/developer/xx-net/data/launcher/config.json && \
+    echo "\"allow_remote_connect\": 1" >>/home/developer/xx-net/data/launcher/config.json && \
+    echo "}" >>/home/developer/xx-net/data/launcher/config.json && \
     echo "{\"socks_port\": 1080, \"socks_host\": \"0.0.0.0\"}" >>/home/developer/xx-net/data/x_tunnel/client.json && \    
     chown ${uid}:${gid} -R /home/developer
  
@@ -32,4 +33,3 @@ USER root
 ENV HOME /home/developer
 
 CMD sh -c 'miredo & runuser -l developer  -c "/home/developer/xx-net/start"'
-
