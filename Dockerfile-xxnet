@@ -9,7 +9,7 @@ FROM fedora:33
 ARG Myappid=
 #ADD ./*repo /etc/yum.repos.d/
 ADD ./XX-Net* /home/developer/xx-net
-RUN dnf -y install python3-pyOpenSSL python3 miredo iproute sudo&& dnf clean all 
+RUN dnf -y install python3-pyOpenSSL python3 iproute sudo&& dnf clean all 
 # Replace 1000 with your user / group id
 RUN export uid=1000 gid=1000 && \
     mkdir -p /home/developer/xx-net/data/gae_proxy/ && \
@@ -32,4 +32,5 @@ EXPOSE 8084 8085 8086 8087 8888 1080
 USER root
 ENV HOME /home/developer
 
-CMD sh -c 'miredo & runuser -l developer  -c "/home/developer/xx-net/start"'
+#CMD sh -c 'miredo & runuser -l developer  -c "/home/developer/xx-net/start"'
+CMD sh -c 'runuser -l developer  -c "/home/developer/xx-net/start"'
